@@ -40,26 +40,8 @@ public class PlayerMovement : MonoBehaviour
         animator = GetComponentInChildren<Animator>();
     }
 
-    IEnumerator ResetAttack()
-    {
-        if(animator.GetLayerWeight(1) > 0)
-        {
-            yield return null;
-        }
-        animator.SetLayerWeight(1, 1f);
-        animator.SetTrigger("Attack");
-
-        yield return new WaitForSeconds(1.2f);
-
-        animator.SetLayerWeight(1, 0f);
-    }
-
     void Update()
     {
-        if(Input.GetMouseButtonDown(0))
-        {
-            StartCoroutine(ResetAttack());
-        }
 
         if (canMove)
         {
@@ -94,14 +76,11 @@ public class PlayerMovement : MonoBehaviour
 
     private IEnumerator IncreaseSpeedValueInAnimator()
     {
-        Debug.Log("First Call IncreaseSpeed");
         float currentValue = animator.GetFloat("Speed");
         float targetValue = moveDirection.magnitude;
 
         while (currentValue < targetValue)
         {
-
-            Debug.Log("Loop Call IncreaseSpeed");
             // Increase the current value based on the increase speed and deltaTime
             currentValue += animationDamping * Time.deltaTime;
 
