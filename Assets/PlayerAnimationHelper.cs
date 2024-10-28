@@ -6,8 +6,17 @@ public class PlayerAnimationHelper : MonoBehaviour
 {
     public HarvestSystem harvestSystem;
 
+    public FarmNPC npc;
+
     public void HarvestPlants()
     {
-        harvestSystem.HarvestPlants();
+        if(harvestSystem != null)
+        {
+            harvestSystem.HarvestPlants();
+        }
+        else if (npc != null)
+        {
+            npc.HarvestPlants();
+        }
     }
 }
