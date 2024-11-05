@@ -15,21 +15,26 @@ public class FarmNPC : MonoBehaviour
         MovingToPlant,
         Harvest
     }
+    [Header("State")]
     public State currentState;
-
+    public Plant target;
     public bool isHarvesting = false;
 
-    public Plant target;
+    [Header("References")]
     public Plant[] possibleTargets;
     public NavMeshAgent agent;
     public Animator animator;
-
-    public int cornCounter = 0;
-
-    public Vector3 spawnPoint;
-    public Quaternion spawnRotation;
-
     public Transform sellPoint;
+
+    private Vector3 spawnPoint;
+    private Quaternion spawnRotation;
+
+
+    [Header("Corn Settings")]
+    public int cornCounter = 0;
+    public GameObject cornPrefab;
+    public Transform cornBackpack;
+    private GameObject cornObject;
 
     void Start()
     {
@@ -102,6 +107,9 @@ public class FarmNPC : MonoBehaviour
             default:
                 break;
         }
+
+        float velocity = agent.velocity.magnitude / agent.speed;
+        animator.SetFloat("Speed", velocity * agent.speed);
     }
 
     void SwitchState(State newState)
@@ -176,6 +184,8 @@ public class FarmNPC : MonoBehaviour
 
         if (cornCounter > 0)
         {
+            InitializeCornObject();
+
             SwitchState(State.MovingToSellPoint);
 
             target = null;
@@ -245,8 +255,24 @@ public class FarmNPC : MonoBehaviour
         Debug.Log("Selling plant");
 
         cornCounter = 0;
+        Destroy(cornObject);
+        cornObject = null;
 
         SwitchState(State.Idle);
+
+
     }
 
+    void InitializeCornObject()
+    {
+        if(cornObject == null)
+        {
+            GameObject corn = Instantiate(cornPrefab, cornBackpack);
+
+            corn.transform.localPosition = new Vector3(0, -0.25f + 0.15f * cornCounter, 0);
+            corn.transform.localRotation = Quaternion.Euler(0, -90f, 0);
+
+            cornObject = corn;
+        }
+    }
 }

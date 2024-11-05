@@ -133,12 +133,10 @@ public class Inventory : MonoBehaviour
         {
             foreach (GameObject cashObject in cashObjects)
             {
-                if(cashObject)
-                {
-                    cashObjects.Remove(cashObject);
-                    Destroy(cashObject);
-                }
+                //cashObjects.Remove(cashObject);
+                Destroy(cashObject);   
             }
+            cashObjects.Clear();
 
             cash = 0;
 
