@@ -1,230 +1,252 @@
+using JetBrains.Annotations;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.EventSystems;
 
 [RequireComponent(typeof(NavMeshAgent))]
 public class FarmNPC : MonoBehaviour
 {
-    public float detectionRadius = 5f;
-    public LayerMask plantLayer;
-    public List<GameObject> targetPlants = new List<GameObject>();
-
-    private NavMeshAgent agent;
-    private Animator animator;
-    private Vector3 spawningPoint;
-    private Quaternion spawningRotation;
-    private GameObject currentTarget;
-    private Plant currentPlant;
-
-    [Header("Animation Handling")]
-    public float animationDamping = 1f;
-    Coroutine animationDampingCoroutine;
-
-    private bool isHarvesting = false;
-
-    void Awake()
+    public enum State
     {
-        agent = GetComponent<NavMeshAgent>();
-        animator = GetComponentInChildren<Animator>();
+        Idle,
+        MovingToSpawnpoint,
+        MovingToSellPoint,
+        MovingToPlant,
+        Harvest
     }
+    public State currentState;
+
+    public bool isHarvesting = false;
+
+    public Plant target;
+    public Plant[] possibleTargets;
+    public NavMeshAgent agent;
+    public Animator animator;
+
+    public int cornCounter = 0;
+
+    public Vector3 spawnPoint;
+    public Quaternion spawnRotation;
+
+    public Transform sellPoint;
 
     void Start()
     {
-        spawningPoint = transform.position;
-        spawningRotation = transform.rotation;
-
-        FindNewTarget();
+        spawnPoint = transform.position;
+        spawnRotation = transform.rotation;
     }
 
     void Update()
     {
-        if (currentTarget == null)
+        switch (currentState)
+        {
+            case State.Idle:
+                if (target != null)
+                {
+                    SwitchState(State.MovingToPlant);
+                }
+                else
+                {
+                    FindNewTarget();
+                }
+
+                break;
+
+            case State.MovingToSpawnpoint:
+                if (agent.remainingDistance <= agent.stoppingDistance)
+                {
+                    transform.rotation = spawnRotation;
+                    SwitchState(State.Idle);
+                }
+                break;
+
+            case State.MovingToSellPoint:
+                {
+                    if (agent.remainingDistance <= agent.stoppingDistance)
+                    {
+                        SellPlant();
+                        SwitchState(State.Idle);
+                    }
+                    break;
+                }
+
+            case State.MovingToPlant:
+                if (target == null || target.state != Plant.plantState.READY)
+                {
+                    FindNewTarget();
+                    return;
+                }
+                if (agent.remainingDistance <= agent.stoppingDistance)
+                {
+                    // Arrived at plant
+                    SwitchState(State.Harvest);
+                }
+                break;
+
+            case State.Harvest:
+                if (!isHarvesting)
+                {
+                    if (target != null && target.state == Plant.plantState.READY)
+                    {
+                        animator.SetBool("canHarvest", true);
+                        isHarvesting = true;
+                    }
+                    else
+                    {
+                        FindNewTarget();
+                    }
+                }
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    void SwitchState(State newState)
+    {
+        if (newState == currentState) return;
+
+        //Debug.Log($"Switching from {currentState} to {newState}");
+
+        if (currentState == State.Harvest)
+        {
+            animator.SetBool("canHarvest", false);
+            isHarvesting = false;
+        }
+
+        switch (newState)
+        {
+            case State.Idle:
+                break;
+
+            case State.MovingToSpawnpoint:
+                agent.enabled = true;
+                agent.SetDestination(spawnPoint);
+                break;
+
+            case State.MovingToSellPoint:
+                agent.enabled = true;
+                agent.SetDestination(sellPoint.position);
+                break;
+
+            case State.MovingToPlant:
+                agent.enabled = true;
+                agent.SetDestination(target.transform.position);
+                break;
+
+            case State.Harvest:
+                agent.SetDestination(transform.position);
+                agent.enabled = false;
+
+                animator.SetBool("canHarvest", true);
+                isHarvesting = true;
+
+                RotateTowardsTarget();
+                break;
+
+            default:
+                break;
+        }
+
+        currentState = newState;
+    }
+
+    public void TriggerHarvest()
+    {
+        if (target == null || target.state != Plant.plantState.READY)
         {
             FindNewTarget();
-        }
-        else
-        {
-            MoveToTarget();
+            return;
         }
 
-        if (agent.velocity == Vector3.zero)
-        {
-            animator.SetFloat("Speed", 0f);
+        target.Harvest(this);
 
-            // Reset Coroutine
-            if (animationDampingCoroutine != null)
-            {
-                StopCoroutine(animationDampingCoroutine);
-                animationDampingCoroutine = null;
-            }
-        }
-        else
+        if (target.state != Plant.plantState.READY)
         {
-            // Start Coroutine
-            if (animationDampingCoroutine == null)
-            {
-                // Start Coroutine if not already done
-                animationDampingCoroutine = StartCoroutine(IncreaseSpeedValueInAnimator());
-            }
+            SwitchState(State.Idle);
+
+            target = null;
+
+            isHarvesting = false;
+            animator.SetBool("canHarvest", false);
+
         }
+
+        if (cornCounter > 0)
+        {
+            SwitchState(State.MovingToSellPoint);
+
+            target = null;
+
+            isHarvesting = false;
+            animator.SetBool("canHarvest", false);
+        }
+    }
+
+    public void EndHarvestAnimation()
+    {
+        animator.SetBool("canHarvest", false);
+        isHarvesting = false;
     }
 
     void FindNewTarget()
     {
-        // Check for nearby plants using a physics overlap sphere
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, detectionRadius, plantLayer);
+        List<Plant> plants = new List<Plant>(possibleTargets);
+        ShuffleList(plants);
 
-        GameObject nearestPlant = null;
-        float minDistance = Mathf.Infinity;
-
-        foreach (Collider hitCollider in hitColliders)
+        foreach (Plant plant in plants)
         {
-            if (hitCollider.gameObject.TryGetComponent<Plant>(out Plant plant))
+            if (plant.state == Plant.plantState.READY)
             {
-                if (plant.state == Plant.plantState.GROWING) continue;
-
-                float distance = Vector3.Distance(transform.position, hitCollider.transform.position);
-                if (distance < minDistance)
-                {
-                    nearestPlant = hitCollider.gameObject;
-                    minDistance = distance;
-                }
+                target = plant;
+                Debug.Log("Found a ready plant");
+                SwitchState(State.MovingToPlant);
+                return;
             }
         }
 
-        if (nearestPlant != null)
-        {
-            currentTarget = nearestPlant;
-            currentPlant = nearestPlant.GetComponent<Plant>();
-        }
-        else if (targetPlants.Count > 0)
-        {
-            int loops = 0;
-            bool foundTarget = false;
-
-            while (!foundTarget && loops < 20)
-            {
-                currentTarget = targetPlants[Random.Range(0, targetPlants.Count)];
-                currentPlant = currentTarget.GetComponent<Plant>();
-                if (currentPlant.state == Plant.plantState.READY)
-                {
-                    foundTarget = true;
-                    Debug.Log("Found target!");
-                    return;
-                }
-                currentTarget = null;
-                currentPlant = null;
-                Debug.Log("No target found!");
-                loops++;
-            }
-
-            // 10 loops and no target plant found
-
-            GoToSpawnPoint();
-
-        }
-        else
-        {
-            // No plants available; return to spawn point
-            GoToSpawnPoint();
-        }
+        Debug.Log("No readyish plant found");
+        SwitchState(State.MovingToSpawnpoint);
     }
 
-    void MoveToTarget()
+    void ShuffleList(List<Plant> list)
     {
-        if (currentTarget == null) return;
+        System.Random rng = new System.Random();
+        int n = list.Count;
 
-        float distanceToTarget = Vector3.Distance(transform.position, currentTarget.transform.position);
-
-        if (distanceToTarget > 1f)
+        while (n > 1)
         {
-            isHarvesting = false;
-            agent.SetDestination(currentTarget.transform.position);
-        }
-        else
-        {
-            FaceTarget(currentTarget.transform);
-            Harvest();
+            n--;
+            int k = rng.Next(n + 1);
+            Plant value = list[k];
+            list[k] = list[n];
+            list[n] = value;
         }
     }
 
-    void GoToSpawnPoint()
+    void RotateTowardsTarget()
     {
-        currentTarget = null;
-        currentPlant = null;
-        isHarvesting = false;
+        if (target == null) return;
 
-        // Check if reached spawn point
-        if (Vector3.Distance(transform.position, spawningPoint) < 0.1f)
-        {
-            FaceSpawnPoint();
-        }
-        else
-        {
-            agent.SetDestination(spawningPoint);
-        }
+        // Calculate the direction vector from this GameObject to the target
+        Vector3 directionToTarget = target.transform.position - transform.position;
+
+        // Calculate the rotation required to look at the target
+        Quaternion targetRotation = Quaternion.LookRotation(directionToTarget);
+
+        // Smoothly rotate towards the target
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 5f);
     }
 
-    void FaceTarget(Transform target)
+    void SellPlant()
     {
-        Vector3 direction = (target.position - transform.position).normalized;
-        Quaternion lookRotation = Quaternion.LookRotation(new Vector3(direction.x, 0, direction.z));
-        transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 5f);
+        Debug.Log("Selling plant");
+
+        cornCounter = 0;
+
+        SwitchState(State.Idle);
     }
 
-    void FaceSpawnPoint()
-    {
-        transform.rotation = Quaternion.Slerp(transform.rotation, spawningRotation, Time.deltaTime * 5f);
-    }
-
-    public void Harvest()
-    {
-        if(!isHarvesting)
-        {
-            isHarvesting = true;
-            animator.SetLayerWeight(1, 1f);
-            animator.SetBool("canHarvest", true);
-        }
-        else
-        {
-            if(currentPlant.state == Plant.plantState.GROWING)
-            {
-                FindNewTarget();
-            }
-        }
-    }
-
-    public void HarvestPlants()
-    {
-        currentTarget.GetComponent<Plant>().Harvest();
-    }
-
-    #region Animation
-
-    private IEnumerator IncreaseSpeedValueInAnimator()
-    {
-        float currentValue = animator.GetFloat("Speed");
-        float targetValue = agent.speed;
-
-        Debug.Log(targetValue);
-
-        while (currentValue < targetValue)
-        {
-            // Increase the current value based on the increase speed and deltaTime
-            currentValue += animationDamping * Time.deltaTime;
-
-            // Clamp the current value to ensure it doesn't exceed the target
-            currentValue = Mathf.Min(currentValue, targetValue);
-
-            // Set the Animator parameter to the new value
-            animator.SetFloat("Speed", currentValue);
-
-            // Wait for the next frame before continuing the loop
-            yield return null;
-        }
-    }
-
-    #endregion
 }

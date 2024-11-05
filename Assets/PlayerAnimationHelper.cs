@@ -16,7 +16,15 @@ public class PlayerAnimationHelper : MonoBehaviour
         }
         else if (npc != null)
         {
-            npc.HarvestPlants();
+            npc.TriggerHarvest();
+        }
+    }
+
+    public void EndNPCHarvestAnimation()
+    {
+        if(npc != null)
+        {
+            npc.EndHarvestAnimation();
         }
     }
 }

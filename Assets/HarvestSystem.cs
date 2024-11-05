@@ -114,11 +114,7 @@ public class HarvestSystem : MonoBehaviour
     {
         if (plantObject.TryGetComponent<Plant>(out Plant plant))
         {
-            if (!detectedPlants.Contains(plant))
-            {
-                Debug.Log("Plant is not on the list and therefore can't be removed");
-            }
-            else
+            if (detectedPlants.Contains(plant))
             {
                 detectedPlants.Remove(plant);
             }

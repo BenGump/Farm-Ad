@@ -20,6 +20,10 @@ public class Inventory : MonoBehaviour
     public GameObject cornPrefab;
     public List<GameObject> cornObjects;
 
+    private void Start()
+    {
+        AddCash(100);
+    }
 
     public void AddPlant(string plantName)
     {
@@ -107,6 +111,40 @@ public class Inventory : MonoBehaviour
         }
 
         uiManager.ChangeCashText(cash);
+    }
+
+    public void RemoveCash(int amount)
+    {
+        if(cash - amount > 0)
+        {
+            for (int i = 0; i < amount; i++)
+            {
+                cash--;
+                if(cashObjects.Count > 0)
+                {
+                    Destroy(cashObjects[cashObjects.Count - 1]);
+                    cashObjects.RemoveAt(cashObjects.Count - 1);
+                }
+            }
+
+            uiManager.ChangeCashText(cash);
+        }
+        else if (cash - amount == 0)
+        {
+            foreach (GameObject cashObject in cashObjects)
+            {
+                if(cashObject)
+                {
+                    cashObjects.Remove(cashObject);
+                    Destroy(cashObject);
+                }
+            }
+
+            cash = 0;
+
+            uiManager.ChangeCashText(cash);
+        }
+
     }
 
 }

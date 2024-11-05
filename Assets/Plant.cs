@@ -34,7 +34,7 @@ public class Plant : MonoBehaviour
 
     public string plantName;
 
-    public void Harvest()
+    public void Harvest(FarmNPC npc = null)
     {
         if(state == plantState.READY)
         {
@@ -44,7 +44,22 @@ public class Plant : MonoBehaviour
 
             if(currentHarvestAttempt >= harvestAttemptsNeeded)
             {
-                playerInventory.AddPlant(plantName);
+                // Add to inventory from NPC or the Players inventory
+                if(npc)
+                {
+                    if(plantName == "Corn")
+                    {
+                        npc.cornCounter++;
+                    }
+                    else
+                    {
+                        Debug.Log("Plant name doesnt appear in NPC inventory code, it's not hardcoded");
+                    }
+                }
+                else
+                {
+                    playerInventory.AddPlant(plantName);
+                }
 
                 boxCollider.enabled = false;
                 meshRenderer.enabled = false;
