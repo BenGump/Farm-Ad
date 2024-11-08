@@ -1,6 +1,7 @@
 using JetBrains.Annotations;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -24,7 +25,7 @@ public class FarmNPC : MonoBehaviour
     public Plant[] possibleTargets;
     public NavMeshAgent agent;
     public Animator animator;
-    public Transform sellPoint;
+    public SellingZone sellingZone;
 
     private Vector3 spawnPoint;
     private Quaternion spawnRotation;
@@ -32,9 +33,10 @@ public class FarmNPC : MonoBehaviour
 
     [Header("Corn Settings")]
     public int cornCounter = 0;
+    public int maxCarrieableCorn = 1;
     public GameObject cornPrefab;
     public Transform cornBackpack;
-    private GameObject cornObject;
+    private List<GameObject> cornObjects = new();
 
     void Start()
     {
@@ -70,7 +72,7 @@ public class FarmNPC : MonoBehaviour
                 {
                     if (agent.remainingDistance <= agent.stoppingDistance)
                     {
-                        SellPlant();
+                        SellPlants();
                         SwitchState(State.Idle);
                     }
                     break;
@@ -136,7 +138,7 @@ public class FarmNPC : MonoBehaviour
 
             case State.MovingToSellPoint:
                 agent.enabled = true;
-                agent.SetDestination(sellPoint.position);
+                agent.SetDestination(sellingZone.transform.position);
                 break;
 
             case State.MovingToPlant:
@@ -184,14 +186,18 @@ public class FarmNPC : MonoBehaviour
 
         if (cornCounter > 0)
         {
-            InitializeCornObject();
+            InitializeCornObjects();
 
-            SwitchState(State.MovingToSellPoint);
+            if(cornCounter >= maxCarrieableCorn)
+            {
+                SwitchState(State.MovingToSellPoint);
 
-            target = null;
+                target = null;
 
-            isHarvesting = false;
-            animator.SetBool("canHarvest", false);
+                isHarvesting = false;
+                animator.SetBool("canHarvest", false);
+            }
+
         }
     }
 
@@ -250,22 +256,46 @@ public class FarmNPC : MonoBehaviour
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 5f);
     }
 
-    void SellPlant()
+    void SellPlants()
     {
-        Debug.Log("Selling plant");
+        sellingZone.TransferPlantToCash(cornCounter);
+        Debug.Log($"Selling plants: {cornCounter}");
 
         cornCounter = 0;
-        Destroy(cornObject);
-        cornObject = null;
+
+        for (int i = 0; i < cornObjects.Count; i++)
+        {
+            Destroy(cornObjects[i]);
+            Debug.Log($"Destroying Object number {i}");
+        }
+        cornObjects.Clear();
 
         SwitchState(State.Idle);
-
-
     }
 
-    void InitializeCornObject()
+    void InitializeCornObjects()
     {
-        if(cornObject == null)
+        foreach (GameObject cornObject in cornObjects)
+        {
+            Destroy(cornObject);
+        }
+
+        cornObjects.Clear();
+
+        for (int i = 0; i < cornCounter; i++)
+        {
+            GameObject corn = Instantiate(cornPrefab, cornBackpack);
+
+            corn.transform.localPosition = new Vector3(0, -0.25f + 0.15f * i, 0);
+            corn.transform.localRotation = Quaternion.Euler(0, -90f, 0);
+
+            cornObjects.Add(corn);
+        }
+
+
+        // Old!
+        /*
+        if (cornObject == null)
         {
             GameObject corn = Instantiate(cornPrefab, cornBackpack);
 
@@ -274,5 +304,6 @@ public class FarmNPC : MonoBehaviour
 
             cornObject = corn;
         }
+        */
     }
 }

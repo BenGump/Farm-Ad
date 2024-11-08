@@ -28,7 +28,7 @@ public class SellingZone : MonoBehaviour
                 {
                     playerInventory.RemovePlant(sellingPlant);
 
-                    moneyZone.AddCashToStock(sellingPrice);
+                    TransferPlantToCash(1);
 
                     timer = 0f;
                 }
@@ -51,5 +51,10 @@ public class SellingZone : MonoBehaviour
         {
             isPlayerInside = false;
         }
+    }
+
+    public void TransferPlantToCash(int amountOfPlants)
+    {
+        moneyZone.AddCashToStock(amountOfPlants * sellingPrice);
     }
 }
