@@ -41,8 +41,12 @@ public class UpgradeZone : MonoBehaviour
 
     void TakeCash()
     {
-        if(playerInventory.cash > 0)
+        //Debug.Log("Calling Take Cash");
+
+        if (playerInventory.cash > 0)
         {
+            //Debug.Log("Actually calling TakeCash");
+
             currentCash++;
             playerInventory.RemoveCash(1);
 
@@ -73,5 +77,11 @@ public class UpgradeZone : MonoBehaviour
         {
             CancelInvoke("TakeCash");
         }
+    }
+
+    void OnDisable()
+    {
+        // Safety first
+        CancelInvoke("TakeCash");    
     }
 }

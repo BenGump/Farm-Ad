@@ -12,6 +12,8 @@ public class HarvestSystem : MonoBehaviour
     [SerializeField] LayerMask plantLayer;
     [SerializeField] float checkInterval = .2f;
 
+    [SerializeField] GameObject scyteObject;
+
     List<Plant> detectedPlants = new List<Plant>();
 
     void Awake()
@@ -65,6 +67,8 @@ public class HarvestSystem : MonoBehaviour
         {
             isHarvesting = true;
 
+            scyteObject.SetActive(true);
+
             animator.SetLayerWeight(1, 1f);
             animator.SetBool("canHarvest", true);
         }
@@ -86,6 +90,9 @@ public class HarvestSystem : MonoBehaviour
     public void StopHarvesting()
     {
         isHarvesting = false;
+
+        scyteObject.SetActive(false);
+
         animator.SetBool("canHarvest", false);
         animator.SetLayerWeight(1, 0f);
     }

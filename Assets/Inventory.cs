@@ -22,7 +22,8 @@ public class Inventory : MonoBehaviour
 
     private void Start()
     {
-        AddCash(100);
+        // Testing purpose
+        //AddCash(100);
     }
 
     public void AddPlant(string plantName)
