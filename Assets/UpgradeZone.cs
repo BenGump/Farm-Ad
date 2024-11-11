@@ -23,10 +23,19 @@ public class UpgradeZone : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        // Setup
         sliderXScaleMaximum = progressSlider.transform.localScale.x;
         sliderZScaleMaximum = progressSlider.transform.localScale.z;
 
         progressSlider.transform.localScale = new Vector3(0, progressSlider.transform.localScale.y, 0);
+
+        amountText.text = $"{currentCash} / {upgradeCost}";
+
+        if(currentCash>= upgradeCost)
+        {
+            Upgrade();
+        }
+
     }
 
     public void Upgrade()

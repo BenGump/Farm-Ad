@@ -68,7 +68,7 @@ public class Plant : MonoBehaviour
                 float timeToRegrow = UnityEngine.Random.Range(growBackTime - .2f, growBackTime + .2f);
                 Invoke("ResetPlant", timeToRegrow);
 
-                harvestSystem.RemoveDetectedPlant(gameObject);
+                //harvestSystem.RemoveDetectedPlant(gameObject);
             }
         }
     }

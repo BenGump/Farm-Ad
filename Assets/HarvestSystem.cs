@@ -78,11 +78,29 @@ public class HarvestSystem : MonoBehaviour
     // Gets called by the player harvest animation (in the middle of the swing)
     public void HarvestPlants()
     {
-        for (int i = 0; i < detectedPlants.Count; i++)
+        List<Plant> plants = new List<Plant>(detectedPlants);
+
+        for (int i = 0; i < plants.Count; i++)
         {
-            if (detectedPlants[i].state == Plant.plantState.READY)
+            Debug.Log($"Checking for {plants[i].gameObject.name}");
+            if (plants[i].state == Plant.plantState.READY)
             {
-                detectedPlants[i].Harvest();
+                Debug.Log("It is ready!");
+                plants[i].Harvest();
+
+                // If it was the last Harvest Attempt and it regrows (= not ready)
+                if (plants[i].state != Plant.plantState.READY)
+                {
+                    //plants.Remove(detectedPlants[i]);
+                }
+            }
+        }
+
+        foreach (Plant plant in plants)
+        {
+            if(plant.state != Plant.plantState.READY)
+            {
+                detectedPlants.Remove(plant);
             }
         }
     }
