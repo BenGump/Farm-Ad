@@ -82,17 +82,9 @@ public class HarvestSystem : MonoBehaviour
 
         for (int i = 0; i < plants.Count; i++)
         {
-            Debug.Log($"Checking for {plants[i].gameObject.name}");
             if (plants[i].state == Plant.plantState.READY)
             {
-                Debug.Log("It is ready!");
                 plants[i].Harvest();
-
-                // If it was the last Harvest Attempt and it regrows (= not ready)
-                if (plants[i].state != Plant.plantState.READY)
-                {
-                    //plants.Remove(detectedPlants[i]);
-                }
             }
         }
 

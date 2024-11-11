@@ -5838,6 +5838,14 @@ PrefabInstance:
       propertyPath: playerInventory
       value: 
       objectReference: {fileID: 1239860616}
+    - target: {fileID: 96785494730470882, guid: 2b8d555fd52d12e40b1a214d929b1e93, type: 3}
+      propertyPath: harvestSystem
+      value: 
+      objectReference: {fileID: 1239860617}
+    - target: {fileID: 96785494730470882, guid: 2b8d555fd52d12e40b1a214d929b1e93, type: 3}
+      propertyPath: playerInventory
+      value: 
+      objectReference: {fileID: 1239860616}
     - target: {fileID: 262237811872263618, guid: 2b8d555fd52d12e40b1a214d929b1e93, type: 3}
       propertyPath: harvestSystem
       value: 
@@ -5875,6 +5883,14 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1239860617}
     - target: {fileID: 716978814135741834, guid: 2b8d555fd52d12e40b1a214d929b1e93, type: 3}
+      propertyPath: playerInventory
+      value: 
+      objectReference: {fileID: 1239860616}
+    - target: {fileID: 806293405764640305, guid: 2b8d555fd52d12e40b1a214d929b1e93, type: 3}
+      propertyPath: harvestSystem
+      value: 
+      objectReference: {fileID: 1239860617}
+    - target: {fileID: 806293405764640305, guid: 2b8d555fd52d12e40b1a214d929b1e93, type: 3}
       propertyPath: playerInventory
       value: 
       objectReference: {fileID: 1239860616}
@@ -5994,6 +6010,22 @@ PrefabInstance:
       propertyPath: playerInventory
       value: 
       objectReference: {fileID: 1239860616}
+    - target: {fileID: 2410981445592107159, guid: 2b8d555fd52d12e40b1a214d929b1e93, type: 3}
+      propertyPath: harvestSystem
+      value: 
+      objectReference: {fileID: 1239860617}
+    - target: {fileID: 2410981445592107159, guid: 2b8d555fd52d12e40b1a214d929b1e93, type: 3}
+      propertyPath: playerInventory
+      value: 
+      objectReference: {fileID: 1239860616}
+    - target: {fileID: 3068907297309214384, guid: 2b8d555fd52d12e40b1a214d929b1e93, type: 3}
+      propertyPath: harvestSystem
+      value: 
+      objectReference: {fileID: 1239860617}
+    - target: {fileID: 3068907297309214384, guid: 2b8d555fd52d12e40b1a214d929b1e93, type: 3}
+      propertyPath: playerInventory
+      value: 
+      objectReference: {fileID: 1239860616}
     - target: {fileID: 3203560616465290534, guid: 2b8d555fd52d12e40b1a214d929b1e93, type: 3}
       propertyPath: m_IsActive
       value: 1
@@ -6006,6 +6038,14 @@ PrefabInstance:
       propertyPath: playerInventory
       value: 
       objectReference: {fileID: 1239860616}
+    - target: {fileID: 4344293906497179534, guid: 2b8d555fd52d12e40b1a214d929b1e93, type: 3}
+      propertyPath: harvestSystem
+      value: 
+      objectReference: {fileID: 1239860617}
+    - target: {fileID: 4344293906497179534, guid: 2b8d555fd52d12e40b1a214d929b1e93, type: 3}
+      propertyPath: playerInventory
+      value: 
+      objectReference: {fileID: 1239860616}
     - target: {fileID: 4450628833850063535, guid: 2b8d555fd52d12e40b1a214d929b1e93, type: 3}
       propertyPath: harvestSystem
       value: 
@@ -6030,11 +6070,27 @@ PrefabInstance:
       propertyPath: playerInventory
       value: 
       objectReference: {fileID: 1239860616}
+    - target: {fileID: 5972102813524129387, guid: 2b8d555fd52d12e40b1a214d929b1e93, type: 3}
+      propertyPath: harvestSystem
+      value: 
+      objectReference: {fileID: 1239860617}
+    - target: {fileID: 5972102813524129387, guid: 2b8d555fd52d12e40b1a214d929b1e93, type: 3}
+      propertyPath: playerInventory
+      value: 
+      objectReference: {fileID: 1239860616}
     - target: {fileID: 6225078279434811523, guid: 2b8d555fd52d12e40b1a214d929b1e93, type: 3}
       propertyPath: harvestSystem
       value: 
       objectReference: {fileID: 1239860617}
     - target: {fileID: 6225078279434811523, guid: 2b8d555fd52d12e40b1a214d929b1e93, type: 3}
+      propertyPath: playerInventory
+      value: 
+      objectReference: {fileID: 1239860616}
+    - target: {fileID: 6247522955887113197, guid: 2b8d555fd52d12e40b1a214d929b1e93, type: 3}
+      propertyPath: harvestSystem
+      value: 
+      objectReference: {fileID: 1239860617}
+    - target: {fileID: 6247522955887113197, guid: 2b8d555fd52d12e40b1a214d929b1e93, type: 3}
       propertyPath: playerInventory
       value: 
       objectReference: {fileID: 1239860616}
@@ -6051,6 +6107,14 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1239860617}
     - target: {fileID: 6904767586884515974, guid: 2b8d555fd52d12e40b1a214d929b1e93, type: 3}
+      propertyPath: playerInventory
+      value: 
+      objectReference: {fileID: 1239860616}
+    - target: {fileID: 7042845583332514485, guid: 2b8d555fd52d12e40b1a214d929b1e93, type: 3}
+      propertyPath: harvestSystem
+      value: 
+      objectReference: {fileID: 1239860617}
+    - target: {fileID: 7042845583332514485, guid: 2b8d555fd52d12e40b1a214d929b1e93, type: 3}
       propertyPath: playerInventory
       value: 
       objectReference: {fileID: 1239860616}
@@ -6075,6 +6139,14 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1239860617}
     - target: {fileID: 7966168968052243306, guid: 2b8d555fd52d12e40b1a214d929b1e93, type: 3}
+      propertyPath: playerInventory
+      value: 
+      objectReference: {fileID: 1239860616}
+    - target: {fileID: 7986243018700594189, guid: 2b8d555fd52d12e40b1a214d929b1e93, type: 3}
+      propertyPath: harvestSystem
+      value: 
+      objectReference: {fileID: 1239860617}
+    - target: {fileID: 7986243018700594189, guid: 2b8d555fd52d12e40b1a214d929b1e93, type: 3}
       propertyPath: playerInventory
       value: 
       objectReference: {fileID: 1239860616}
