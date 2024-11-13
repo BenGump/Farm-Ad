@@ -5114,7 +5114,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   uiManager: {fileID: 2146557388}
   questManager: {fileID: 0}
-  cash: 200
+  cash: 0
   cashBackpack: {fileID: 1201482673}
   cashPrefab: {fileID: 1838217239456591598, guid: 6798254ea9b8a3e408f4faec6853bf62, type: 3}
   cashObjects: []
@@ -8539,9 +8539,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   quest1Completed: 0
-  quest2Completed: 1
-  quest3Completed: 1
-  quest4Completed: 1
+  quest2Completed: 0
+  quest3Completed: 0
+  quest4Completed: 0
   quest1UIElement: {fileID: 828676950}
   quest2UIElement: {fileID: 1000109935}
   quest3UIElement: {fileID: 680070612}
