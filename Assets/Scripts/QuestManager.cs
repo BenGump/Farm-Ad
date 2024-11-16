@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class QuestManager : MonoBehaviour
@@ -38,19 +39,27 @@ public class QuestManager : MonoBehaviour
             case 1:
                 if (quest1Completed) return;
                 quest1Completed = true;
-                quest1UIElement.SetActive(false);
+                StartDeletingQuestElement(quest1UIElement);
+                //quest1UIElement.SetActive(false);
                 break;
 
             case 2:
                 if (quest2Completed) return;
                 quest2Completed = true;
-                quest2UIElement.SetActive(false);
+                StartDeletingQuestElement(quest2UIElement);
+                //quest2UIElement.SetActive(false);
                 break;
 
             case 3:
                 if (quest3Completed) return;
                 quest3Completed = true;
-                quest3UIElement.SetActive(false);
+                StartDeletingQuestElement(quest3UIElement);
+                //quest3UIElement.SetActive(false);
+                break;
+            case 4:
+                if(quest4Completed) return;
+                quest4Completed = true;
+                StartDeletingQuestElement(quest4UIElement);
                 break;
 
             default:
@@ -63,5 +72,32 @@ public class QuestManager : MonoBehaviour
             // Finish game!
             finishScreen.SetActive(true);
         }
+    }
+
+    
+    public void StartDeletingQuestElement(GameObject parentObject)
+    {
+        TMP_Text textComponent = parentObject.transform.GetChild(1).GetComponent<TMP_Text>();
+
+        StartCoroutine(DeletingQuestElement(textComponent, .01f, parentObject));
+    }
+
+    private IEnumerator DeletingQuestElement(TMP_Text textComponent, float duration, GameObject parent)
+    {
+        string originalText = textComponent.text;
+        Debug.Log($"Starting at {textComponent.text.Length}");
+
+        for (int i = 0; i < originalText.Length; i++)
+        {            
+            Debug.Log(i.ToString());
+            string tempString = originalText.Insert(i+1, "</s>");
+            tempString = tempString.Insert(0, "<s>");
+            textComponent.text = tempString;
+            yield return new WaitForSeconds(duration);
+
+        }
+
+        parent.GetComponent<Animator>()?.SetTrigger("FadeOut");
+        Destroy(parent, .75f);
     }
 }
