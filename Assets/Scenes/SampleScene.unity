@@ -5138,7 +5138,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   uiManager: {fileID: 2146557388}
   questManager: {fileID: 2146557387}
-  cash: 100
+  cash: 0
   cashBackpack: {fileID: 1201482673}
   cashPrefab: {fileID: 1838217239456591598, guid: 6798254ea9b8a3e408f4faec6853bf62, type: 3}
   cashObjects: []
