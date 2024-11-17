@@ -124,6 +124,8 @@ public class FarmNPC : MonoBehaviour
         {
             animator.SetBool("canHarvest", false);
             isHarvesting = false;
+
+            animator.SetLayerWeight(1, 0f);
         }
 
         switch (newState)
@@ -150,6 +152,7 @@ public class FarmNPC : MonoBehaviour
                 agent.SetDestination(transform.position);
                 agent.enabled = false;
 
+                animator.SetLayerWeight(1, 1f);
                 animator.SetBool("canHarvest", true);
                 isHarvesting = true;
 

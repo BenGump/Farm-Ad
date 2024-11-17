@@ -89,7 +89,6 @@ public class QuestManager : MonoBehaviour
 
         for (int i = 0; i < originalText.Length; i++)
         {            
-            Debug.Log(i.ToString());
             string tempString = originalText.Insert(i+1, "</s>");
             tempString = tempString.Insert(0, "<s>");
             textComponent.text = tempString;
