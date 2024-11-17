@@ -113,10 +113,7 @@ public class Inventory : MonoBehaviour
             InitializeCashObject();
         }
 
-        if (cash >= questManager.quest4CashNeeded)
-        {
-            questManager.CompleteQuest(4);
-        }
+        questManager.SetTotalCash(cash);
 
         uiManager.ChangeCashText(cash);
     }
