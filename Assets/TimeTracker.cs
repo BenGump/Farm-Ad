@@ -6,14 +6,13 @@ using TMPro;
 public class TimeTracker : MonoBehaviour
 {
     public bool stopCounting = false;
-    public TMP_Text timerText;
+    [SerializeField] TMP_Text timerText;
     // Start is called before the first frame update
 
-    public int Minutes { get; private set; }
-    public int Seconds { get; private set; }
-    public float Milliseconds { get; private set; }
+    int minutes;
+    int seconds;
 
-    private float elapsedTime; // Gesamtzeit in Sekunden
+    float elapsedTime; // Gesamtzeit in Sekunden
 
     void Update()
     {
@@ -23,10 +22,9 @@ public class TimeTracker : MonoBehaviour
         elapsedTime += Time.deltaTime;
 
         // Berechne Minuten, Sekunden und Millisekunden
-        Minutes = Mathf.FloorToInt(elapsedTime / 60f); // Minuten
-        Seconds = Mathf.FloorToInt(elapsedTime % 60f); // Sekunden
-        Milliseconds = Mathf.FloorToInt((elapsedTime % 1f) * 100);
+        minutes = Mathf.FloorToInt(elapsedTime / 60f); // Minuten
+        seconds = Mathf.FloorToInt(elapsedTime % 60f); // Sekunden
 
-        timerText.text = $"{Minutes:D2}:{Seconds:D2}:{Milliseconds}";
+        timerText.text = $"{minutes:D2}:{seconds:D2}";
     }
 }
