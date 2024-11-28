@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerAnimationHelper : MonoBehaviour
 {
@@ -27,4 +28,6 @@ public class PlayerAnimationHelper : MonoBehaviour
             npc.EndHarvestAnimation();
         }
     }
+
+    
 }
