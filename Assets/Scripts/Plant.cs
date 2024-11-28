@@ -10,6 +10,7 @@ public class Plant : MonoBehaviour
     public HarvestSystem harvestSystem;
 
     public float growBackTime = 2f;
+    public int amountGatheredOnHarvest = 1;
 
     [SerializeField] int harvestAttemptsNeeded = 2;
     [SerializeField] int currentHarvestAttempt = 0;
@@ -49,7 +50,7 @@ public class Plant : MonoBehaviour
                 {
                     if(plantName == "Corn")
                     {
-                        npc.cornCounter++;
+                        npc.AddPlant(plantName);
                     }
                     else
                     {
@@ -58,7 +59,7 @@ public class Plant : MonoBehaviour
                 }
                 else
                 {
-                    playerInventory.AddPlant(plantName);
+                    playerInventory.AddPlant(plantName, amountGatheredOnHarvest);
                 }
 
                 boxCollider.enabled = false;

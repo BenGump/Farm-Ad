@@ -12,9 +12,6 @@ public class Inventory : MonoBehaviour
 
         [Header("Cash things")]
     public int cash = 0;
-    public Transform cashBackpack;
-    public GameObject cashPrefab;
-    public List<GameObject> cashObjects;
 
     [Header("Corn things")]
     public int cornCounter = 0;
@@ -28,15 +25,20 @@ public class Inventory : MonoBehaviour
         //AddCash(100);
     }
 
-    public void AddPlant(string plantName)
+    public void AddPlant(string plantName, int amount)
     {
         switch(plantName)
         {
             case "Corn":
-                cornCounter++;
+
+                cornCounter += amount;
 
                 // Initialize corn object
-                InitializeCornObject();
+                for(int i = 0; i < amount; i++)
+                {
+                    InitializeCornObject();
+                }
+                
 
                 // Change UI
                 uiManager.ChangeCornText(cornCounter);
@@ -52,20 +54,10 @@ public class Inventory : MonoBehaviour
     {
         GameObject cornObject = Instantiate(cornPrefab, cornBackpack);
 
-        cornObject.transform.localPosition = new Vector3(0, -0.25f + 0.15f * cornCounter, 0);
+        cornObject.transform.localPosition = new Vector3(0, -0.25f + 0.15f * cornObjects.Count, 0);
         cornObject.transform.localRotation = Quaternion.Euler(0, -90f, 0);
 
         cornObjects.Add(cornObject);
-    }
-
-    private void InitializeCashObject()
-    {
-        GameObject cashObject = Instantiate(cashPrefab, cashBackpack);
-
-        cashObject.transform.localPosition = new Vector3(0, -0.25f + 0.02f * cash, 0);
-        cashObject.transform.localRotation = Quaternion.Euler(0, -180f, 0);
-
-        cashObjects.Add(cashObject);
     }
 
     public void RemovePlant(string plantName)
@@ -103,15 +95,10 @@ public class Inventory : MonoBehaviour
 
         return false;
     }
-
     
     public void AddCash(int amount)
     {
-        for (int i = 0; i < amount; i++)
-        {
-            cash++;
-            InitializeCashObject();
-        }
+        cash += amount;
 
         questManager.SetTotalCash(cash);
 
@@ -120,34 +107,14 @@ public class Inventory : MonoBehaviour
 
     public void RemoveCash(int amount)
     {
-        if(cash - amount > 0)
-        {
-            for (int i = 0; i < amount; i++)
-            {
-                cash--;
-                if(cashObjects.Count > 0)
-                {
-                    Destroy(cashObjects[cashObjects.Count - 1]);
-                    cashObjects.RemoveAt(cashObjects.Count - 1);
-                }
-            }
+        cash -= amount;
 
-            uiManager.ChangeCashText(cash);
-        }
-        else if (cash - amount == 0)
+        if(cash < 0)
         {
-            foreach (GameObject cashObject in cashObjects)
-            {
-                //cashObjects.Remove(cashObject);
-                Destroy(cashObject);   
-            }
-            cashObjects.Clear();
-
             cash = 0;
-
-            uiManager.ChangeCashText(cash);
         }
 
+        uiManager.ChangeCashText(cash);
     }
 
 }

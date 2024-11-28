@@ -18,25 +18,26 @@ public class FarmNPC : MonoBehaviour
     }
     [Header("State")]
     public State currentState;
-    public Plant target;
-    public bool isHarvesting = false;
+    Plant target;
+    bool isHarvesting = false;
 
     [Header("References")]
+    [SerializeField] string plantName = "Corn";
     public Plant[] possibleTargets;
-    public NavMeshAgent agent;
-    public Animator animator;
-    public SellingZone sellingZone;
+    [SerializeField] NavMeshAgent agent;
+    [SerializeField] Animator animator;
+    [SerializeField] SellingZone sellingZone;
 
-    private Vector3 spawnPoint;
-    private Quaternion spawnRotation;
+    Vector3 spawnPoint;
+    Quaternion spawnRotation;
 
 
     [Header("Corn Settings")]
-    public int cornCounter = 0;
-    public int maxCarrieableCorn = 1;
-    public GameObject cornPrefab;
-    public Transform cornBackpack;
-    private List<GameObject> cornObjects = new();
+    [SerializeField] int cornCounter = 0;
+    [SerializeField] int maxCarrieableCorn = 1;
+    [SerializeField] GameObject cornPrefab;
+    [SerializeField] Transform cornBackpack;
+    List<GameObject> cornObjects = new();
 
     void Start()
     {
@@ -165,6 +166,26 @@ public class FarmNPC : MonoBehaviour
 
         currentState = newState;
     }
+    
+    void FindNewTarget()
+    {
+        List<Plant> plants = new List<Plant>(possibleTargets);
+        ShuffleList(plants);
+
+        foreach (Plant plant in plants)
+        {
+            if (plant.state == Plant.plantState.READY)
+            {
+                target = plant;
+                Debug.Log("Found a ready plant");
+                SwitchState(State.MovingToPlant);
+                return;
+            }
+        }
+
+        Debug.Log("No readyish plant found");
+        SwitchState(State.MovingToSpawnpoint);
+    }
 
     public void TriggerHarvest()
     {
@@ -210,70 +231,27 @@ public class FarmNPC : MonoBehaviour
         isHarvesting = false;
     }
 
-    void FindNewTarget()
-    {
-        List<Plant> plants = new List<Plant>(possibleTargets);
-        ShuffleList(plants);
-
-        foreach (Plant plant in plants)
-        {
-            if (plant.state == Plant.plantState.READY)
-            {
-                target = plant;
-                Debug.Log("Found a ready plant");
-                SwitchState(State.MovingToPlant);
-                return;
-            }
-        }
-
-        Debug.Log("No readyish plant found");
-        SwitchState(State.MovingToSpawnpoint);
-    }
-
-    void ShuffleList(List<Plant> list)
-    {
-        System.Random rng = new System.Random();
-        int n = list.Count;
-
-        while (n > 1)
-        {
-            n--;
-            int k = rng.Next(n + 1);
-            Plant value = list[k];
-            list[k] = list[n];
-            list[n] = value;
-        }
-    }
-
-    void RotateTowardsTarget()
-    {
-        if (target == null) return;
-
-        // Calculate the direction vector from this GameObject to the target
-        Vector3 directionToTarget = target.transform.position - transform.position;
-
-        // Calculate the rotation required to look at the target
-        Quaternion targetRotation = Quaternion.LookRotation(directionToTarget);
-
-        // Smoothly rotate towards the target
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 5f);
-    }
-
     void SellPlants()
     {
-        sellingZone.TransferPlantToCash(cornCounter);
-        Debug.Log($"Selling plants: {cornCounter}");
-
-        cornCounter = 0;
-
-        for (int i = 0; i < cornObjects.Count; i++)
+        if(plantName == "Corn")
         {
-            Destroy(cornObjects[i]);
-            Debug.Log($"Destroying Object number {i}");
-        }
-        cornObjects.Clear();
+            sellingZone.SellPlant(plantName, cornCounter);
 
-        SwitchState(State.Idle);
+            cornCounter = 0;
+
+            for (int i = 0; i < cornObjects.Count; i++)
+            {
+                Destroy(cornObjects[i]);
+                Debug.Log($"Destroying Object number {i}");
+            }
+            cornObjects.Clear();
+
+            SwitchState(State.Idle);
+        }
+        else
+        {
+            Debug.LogError($"NPC tries to sell an unknown plant named {plantName}!");
+        }
     }
 
     void InitializeCornObjects()
@@ -308,5 +286,52 @@ public class FarmNPC : MonoBehaviour
             cornObject = corn;
         }
         */
+    }
+    
+    void ShuffleList(List<Plant> list)
+    {
+        System.Random rng = new System.Random();
+        int n = list.Count;
+
+        while (n > 1)
+        {
+            n--;
+            int k = rng.Next(n + 1);
+            Plant value = list[k];
+            list[k] = list[n];
+            list[n] = value;
+        }
+    }
+
+    void RotateTowardsTarget()
+    {
+        if (target == null) return;
+
+        // Calculate the direction vector from this GameObject to the target
+        Vector3 directionToTarget = target.transform.position - transform.position;
+
+        // Calculate the rotation required to look at the target
+        Quaternion targetRotation = Quaternion.LookRotation(directionToTarget);
+
+        // Smoothly rotate towards the target
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 5f);
+    }
+
+    public void AddPlant(string plantName)
+    {
+        switch (plantName)
+        {
+            case "Corn":
+
+                cornCounter++;
+
+                // Initialize corn object
+                InitializeCornObjects();
+
+                break;
+            default:
+                Debug.Log($"Trying to add '{plantName}', but it's not found. Spelling error?");
+                break;
+        }
     }
 }

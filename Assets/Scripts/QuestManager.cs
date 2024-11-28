@@ -71,11 +71,8 @@ public class QuestManager : MonoBehaviour
 
         foreach (Quest quest in quests)
         {
-            Debug.Log($"Checking quest {quest.gameObject.name}");
             if(!quest.isCompleted)
             {
-
-                Debug.Log($"Quest {quest.gameObject.name} is not completed!");
                 win = false;
             }
         }

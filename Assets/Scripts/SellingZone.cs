@@ -8,11 +8,10 @@ public class SellingZone : MonoBehaviour
     public int sellingPrice = 1;
 
     [SerializeField] Inventory playerInventory;
-    [SerializeField] MoneyZone moneyZone;
     
-    [SerializeField] bool isPlayerInside = false;
+    bool isPlayerInside = false;
 
-    public float sellingInterval = 0.5f;
+    float sellingInterval = 0.1f;
 
     float timer;
 
@@ -27,12 +26,20 @@ public class SellingZone : MonoBehaviour
                 if(timer >= sellingInterval)
                 {
                     playerInventory.RemovePlant(sellingPlant);
-
-                    TransferPlantToCash(1);
+                    
+                    SellPlant(sellingPlant, 1);
 
                     timer = 0f;
                 }
             }
+        }
+    }
+
+    public void SellPlant(string plantName, int amount)
+    {
+        if(plantName == sellingPlant)
+        {
+            playerInventory.AddCash(sellingPrice * amount);
         }
     }
 
@@ -51,10 +58,5 @@ public class SellingZone : MonoBehaviour
         {
             isPlayerInside = false;
         }
-    }
-
-    public void TransferPlantToCash(int amountOfPlants)
-    {
-        moneyZone.AddCashToStock(amountOfPlants * sellingPrice);
     }
 }
