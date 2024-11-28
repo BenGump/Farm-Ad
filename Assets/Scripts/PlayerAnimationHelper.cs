@@ -9,6 +9,14 @@ public class PlayerAnimationHelper : MonoBehaviour
 
     public FarmNPC npc;
 
+    public void PlayerSwingSound()
+    {
+        if(harvestSystem != null)
+        {
+            harvestSystem.PlaySwingSound();
+        }
+    }
+
     public void HarvestPlants()
     {
         if(harvestSystem != null)

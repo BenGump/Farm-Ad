@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(AudioSource))]
 public class HarvestSystem : MonoBehaviour
 {
     [SerializeField] bool isHarvesting = false;
@@ -13,6 +14,8 @@ public class HarvestSystem : MonoBehaviour
     [SerializeField] float checkInterval = .2f;
 
     [SerializeField] GameObject scyteObject;
+    [SerializeField] AudioClip swingSound;
+    AudioSource audioSource;
 
     List<Plant> detectedPlants = new List<Plant>();
 
@@ -21,6 +24,7 @@ public class HarvestSystem : MonoBehaviour
     void Awake()
     {
         animator = GetComponentInChildren<Animator>();
+        audioSource = GetComponent<AudioSource>();
     }
 
     void Start()
@@ -73,6 +77,15 @@ public class HarvestSystem : MonoBehaviour
 
             animator.SetLayerWeight(1, 1f);
             animator.SetBool("canHarvest", true);
+        }
+    }
+
+    public void PlaySwingSound()
+    {
+        // Possible extension: Check if the plant is Corn for differentiating between Scyte swing and other future swings / harvests
+        if(swingSound)
+        {
+            audioSource.PlayOneShot(swingSound);
         }
     }
 
