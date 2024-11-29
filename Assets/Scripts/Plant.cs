@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
+using MoreMountains.Feedbacks;
 
 public class Plant : MonoBehaviour
 {
@@ -24,6 +25,7 @@ public class Plant : MonoBehaviour
         meshRenderer = GetComponentInChildren<MeshRenderer>();
         boxCollider = GetComponent<BoxCollider>();
         animator = GetComponent<Animator>();
+        plantFeedback = GetComponent<MMF_Player>();
     }
 
     public enum plantState
@@ -35,15 +37,18 @@ public class Plant : MonoBehaviour
 
     public string plantName;
 
+    public MMF_Player plantFeedback;
+
     public void Harvest(FarmNPC npc = null)
     {
         if(state == plantState.READY)
         {
             currentHarvestAttempt++;
 
-            animator.SetTrigger("Shake");
+            plantFeedback?.PlayFeedbacks();
+            //animator.SetTrigger("Shake");
 
-            if(currentHarvestAttempt >= harvestAttemptsNeeded)
+            if (currentHarvestAttempt >= harvestAttemptsNeeded)
             {
                 // Add to inventory from NPC or the Players inventory
                 if(npc)
@@ -68,8 +73,6 @@ public class Plant : MonoBehaviour
                 state = plantState.GROWING;
                 float timeToRegrow = UnityEngine.Random.Range(growBackTime - .2f, growBackTime + .2f);
                 Invoke("ResetPlant", timeToRegrow);
-
-                //harvestSystem.RemoveDetectedPlant(gameObject);
             }
         }
     }
