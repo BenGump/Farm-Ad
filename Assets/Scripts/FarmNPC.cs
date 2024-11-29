@@ -1,6 +1,7 @@
 using JetBrains.Annotations;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.PlasticSCM.Editor.WebApi;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
@@ -14,7 +15,8 @@ public class FarmNPC : MonoBehaviour
         MovingToSpawnpoint,
         MovingToSellPoint,
         MovingToPlant,
-        Harvest
+        Harvest,
+        Dancing
     }
     [Header("State")]
     public State currentState;
@@ -43,6 +45,8 @@ public class FarmNPC : MonoBehaviour
     {
         spawnPoint = transform.position;
         spawnRotation = transform.rotation;
+
+        SwitchState(State.Dancing);
     }
 
     void Update()
@@ -119,14 +123,17 @@ public class FarmNPC : MonoBehaviour
     {
         if (newState == currentState) return;
 
-        //Debug.Log($"Switching from {currentState} to {newState}");
-
         if (currentState == State.Harvest)
         {
             animator.SetBool("canHarvest", false);
             isHarvesting = false;
 
             animator.SetLayerWeight(1, 0f);
+        }
+        
+        if (currentState == State.Dancing)
+        {
+            animator.SetLayerWeight(2, 0f);
         }
 
         switch (newState)
@@ -158,6 +165,10 @@ public class FarmNPC : MonoBehaviour
                 isHarvesting = true;
 
                 RotateTowardsTarget();
+                break;
+
+            case State.Dancing:
+                animator.SetLayerWeight(2, 1f);
                 break;
 
             default:
@@ -231,6 +242,11 @@ public class FarmNPC : MonoBehaviour
         isHarvesting = false;
     }
 
+    public void EndDanceAnimation()
+    {
+        SwitchState(State.Idle);
+    }
+
     void SellPlants()
     {
         if(plantName == "Corn")
@@ -272,20 +288,6 @@ public class FarmNPC : MonoBehaviour
 
             cornObjects.Add(corn);
         }
-
-
-        // Old!
-        /*
-        if (cornObject == null)
-        {
-            GameObject corn = Instantiate(cornPrefab, cornBackpack);
-
-            corn.transform.localPosition = new Vector3(0, -0.25f + 0.15f * cornCounter, 0);
-            corn.transform.localRotation = Quaternion.Euler(0, -90f, 0);
-
-            cornObject = corn;
-        }
-        */
     }
     
     void ShuffleList(List<Plant> list)

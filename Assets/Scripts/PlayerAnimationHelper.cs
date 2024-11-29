@@ -9,6 +9,14 @@ public class PlayerAnimationHelper : MonoBehaviour
 
     public FarmNPC npc;
 
+    public void EndDance()
+    {
+        if(npc != null)
+        {
+            npc.EndDanceAnimation();
+        }
+    }
+
     public void PlayerSwingSound()
     {
         if(harvestSystem != null)
