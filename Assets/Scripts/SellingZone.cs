@@ -2,18 +2,28 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(AudioSource))]
 public class SellingZone : MonoBehaviour
 {
     public string sellingPlant = "Corn";
     public int sellingPrice = 1;
 
     [SerializeField] Inventory playerInventory;
-    
+
+    [SerializeField] AudioClip sellingSound;
+    AudioSource audioSource;
+
+
     bool isPlayerInside = false;
 
     float sellingInterval = 0.1f;
 
     float timer;
+
+    void Awake()
+    {
+        audioSource = GetComponent<AudioSource>();
+    }
 
     private void Update()
     {
@@ -40,6 +50,8 @@ public class SellingZone : MonoBehaviour
         if(plantName == sellingPlant)
         {
             playerInventory.AddCash(sellingPrice * amount);
+
+            audioSource.PlayOneShot(sellingSound);
         }
     }
 

@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -38,7 +39,7 @@ public class HarvestSystem : MonoBehaviour
             canHarvestPlant = false;
 
             if (isHarvesting)
-                StopHarvesting();
+                EndHarvesting();
             return;
         }
 
@@ -62,7 +63,7 @@ public class HarvestSystem : MonoBehaviour
         }
         else
         {
-            StopHarvesting();
+            EndHarvesting();
         }
     }
 
@@ -92,6 +93,8 @@ public class HarvestSystem : MonoBehaviour
     // Gets called by the player harvest animation (in the middle of the swing)
     public void HarvestPlants()
     {
+        Debug.Log("Harvest");
+
         List<Plant> plants = new List<Plant>(detectedPlants);
 
         for (int i = 0; i < plants.Count; i++)
@@ -112,6 +115,11 @@ public class HarvestSystem : MonoBehaviour
         }
     }
 
+    public void EndHarvesting()
+    {
+        StopHarvesting();
+    }
+
     public void StopHarvesting()
     {
         isHarvesting = false;
@@ -119,6 +127,7 @@ public class HarvestSystem : MonoBehaviour
         scyteObject.SetActive(false);
 
         animator.SetBool("canHarvest", false);
+
         animator.SetLayerWeight(1, 0f);
     }
 
@@ -132,7 +141,7 @@ public class HarvestSystem : MonoBehaviour
             }
             else
             {
-                Debug.Log("Detected Plant already on list.");
+                //Debug.Log("Detected Plant already on list.");
             }
 
         }
@@ -157,4 +166,5 @@ public class HarvestSystem : MonoBehaviour
             Debug.Log("Plant Object has no plant script attached to it.");
         }
     }
+
 }

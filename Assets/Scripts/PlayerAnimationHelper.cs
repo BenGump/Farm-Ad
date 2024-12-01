@@ -42,5 +42,14 @@ public class PlayerAnimationHelper : MonoBehaviour
         }
     }
 
+    // To inform the player that the scyte has been put away
+    public void EndPlayerHarvestAnimation()
+    {
+        if(harvestSystem != null)
+        {
+            harvestSystem.StopHarvesting();
+        }
+    }
+
     
 }

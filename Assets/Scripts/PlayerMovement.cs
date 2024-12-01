@@ -42,36 +42,40 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
-
         if (canMove)
         {
             SetMovementInput(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
             Move();
         }
 
-        if(moveDirection == Vector3.zero)
+        if (moveDirection == Vector3.zero)
         {
-            animator.SetFloat("Speed", 0f);
-            
-            // Reset Coroutine
-            if(animationDampingCoroutine != null)
+            if (animationDampingCoroutine != null)
             {
                 StopCoroutine(animationDampingCoroutine);
                 animationDampingCoroutine = null;
             }
+
+            if (animationDampingCoroutine == null)
+            {
+                // Start the coroutine to decrease speed
+                animationDampingCoroutine = StartCoroutine(DecreaseSpeedValueInAnimator());
+            }
         }
         else
         {
-            //animator.SetFloat("Speed", moveDirection.magnitude);
-            //Debug.Log(moveDirection.magnitude);
-
-            if(animationDampingCoroutine == null)
+            if (animationDampingCoroutine != null)
             {
-                // Start Coroutine if not already done
+                StopCoroutine(animationDampingCoroutine);
+                animationDampingCoroutine = null;
+            }
+
+            if (animationDampingCoroutine == null)
+            {
+                // Start the coroutine to increase speed
                 animationDampingCoroutine = StartCoroutine(IncreaseSpeedValueInAnimator());
             }
         }
-
     }
 
     private IEnumerator IncreaseSpeedValueInAnimator()
@@ -81,6 +85,12 @@ public class PlayerMovement : MonoBehaviour
 
         while (currentValue < targetValue)
         {
+            if (Mathf.Approximately(currentValue, targetValue))
+            {
+                animator.SetFloat("Speed", targetValue);
+                break;
+            }
+
             // Increase the current value based on the increase speed and deltaTime
             currentValue += animationDamping * Time.deltaTime;
 
@@ -93,6 +103,30 @@ public class PlayerMovement : MonoBehaviour
             // Wait for the next frame before continuing the loop
             yield return null;
         }
+    }
+
+    private IEnumerator DecreaseSpeedValueInAnimator()
+    {
+
+        float currentValue = animator.GetFloat("Speed");
+        float targetValue = 0f; // Ziel ist 0
+
+        while (!Mathf.Approximately(currentValue, targetValue))
+        {
+            // Smoothly decrease towards the target value
+            currentValue -= animationDamping * Time.deltaTime;
+            currentValue = Mathf.Max(currentValue, targetValue); // Clamp to target
+
+            animator.SetFloat("Speed", currentValue);
+
+            yield return null; // Wait for the next frame
+        }
+
+        // Ensure the final value is set
+        animator.SetFloat("Speed", targetValue);
+
+        // Mark coroutine as finished
+        animationDampingCoroutine = null;
     }
 
 

@@ -1,6 +1,8 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.EventSystems;
 
 [RequireComponent(typeof(NavMeshAgent))]
 public class FarmNPC : MonoBehaviour
@@ -36,6 +38,12 @@ public class FarmNPC : MonoBehaviour
     [SerializeField] GameObject cornPrefab;
     [SerializeField] Transform cornBackpack;
     List<GameObject> cornObjects = new();
+
+    [Header("Animation Handling")]
+    public float animationDamping = 1f;
+    Coroutine decreasingDanceLayerWeightCoroutine;
+    Coroutine decreasingHarvestLayerWeightCoroutine;
+    Coroutine increasingHarvestLayerWeightCoroutine;
 
     void Start()
     {
@@ -115,21 +123,28 @@ public class FarmNPC : MonoBehaviour
         animator.SetFloat("Speed", velocity * agent.speed);
     }
 
+    [SerializeField] float harvestAnimationDamping;
     void SwitchState(State newState)
     {
-        if (newState == currentState) return;
 
+        if (newState == currentState) return;
+        
         if (currentState == State.Harvest)
         {
             animator.SetBool("canHarvest", false);
             isHarvesting = false;
 
-            animator.SetLayerWeight(1, 0f);
+
+
+            if(decreasingHarvestLayerWeightCoroutine == null)
+            {
+                decreasingHarvestLayerWeightCoroutine = StartCoroutine(DecreaseLayerWeightInAnimator(1, harvestAnimationDamping));
+            }
         }
         
         if (currentState == State.Dancing)
         {
-            animator.SetLayerWeight(2, 0f);
+            
         }
 
         switch (newState)
@@ -156,7 +171,12 @@ public class FarmNPC : MonoBehaviour
                 agent.SetDestination(transform.position);
                 agent.enabled = false;
 
-                animator.SetLayerWeight(1, 1f);
+                if (increasingHarvestLayerWeightCoroutine == null)
+                {
+                    decreasingHarvestLayerWeightCoroutine = null;
+                    increasingHarvestLayerWeightCoroutine = StartCoroutine(IncreaseLayerWeightInAnimator(1, harvestAnimationDamping));
+                }
+
                 animator.SetBool("canHarvest", true);
                 isHarvesting = true;
 
@@ -173,7 +193,65 @@ public class FarmNPC : MonoBehaviour
 
         currentState = newState;
     }
-    
+
+    private IEnumerator IncreaseLayerWeightInAnimator(int index, float speed)
+    {
+        float targetValue = 1f; // Ziel ist 1
+        float currentValue = animator.GetLayerWeight(index);
+
+        while (!Mathf.Approximately(currentValue, targetValue))
+        {
+            // Smoothly decrease towards the target value
+            currentValue += speed * Time.deltaTime;
+            currentValue = Mathf.Min(currentValue, targetValue); // Clamp to target
+
+            animator.SetLayerWeight(index, currentValue);
+
+            yield return null; // Wait for the next frame
+        }
+
+        // Ensure the final value is set
+        animator.SetLayerWeight(index, targetValue);
+
+        // Mark coroutine as finished
+        if (index == 1)
+        {
+            increasingHarvestLayerWeightCoroutine = null;
+        }
+    }
+
+    private IEnumerator DecreaseLayerWeightInAnimator(int index, float speed)
+    {
+        float targetValue = 0f; // Ziel ist 0
+        float currentValue = animator.GetLayerWeight(index);
+
+        while (!Mathf.Approximately(currentValue, targetValue))
+        {
+            // Smoothly decrease towards the target value
+            currentValue -= speed * Time.deltaTime;
+            currentValue = Mathf.Max(currentValue, targetValue); // Clamp to target
+
+            animator.SetLayerWeight(index, currentValue);
+
+            yield return null; // Wait for the next frame
+        }
+
+        // Ensure the final value is set
+        animator.SetLayerWeight(index, targetValue);
+
+        // Mark coroutine as finished
+        if(index == 1)
+        {
+            decreasingHarvestLayerWeightCoroutine = null;
+        }
+        else if (index == 2)
+        {
+            decreasingDanceLayerWeightCoroutine = null;
+
+            SwitchState(State.Idle);
+        }
+    }
+
     void FindNewTarget()
     {
         List<Plant> plants = new List<Plant>(possibleTargets);
@@ -184,13 +262,11 @@ public class FarmNPC : MonoBehaviour
             if (plant.state == Plant.plantState.READY)
             {
                 target = plant;
-                Debug.Log("Found a ready plant");
                 SwitchState(State.MovingToPlant);
                 return;
             }
         }
 
-        Debug.Log("No readyish plant found");
         SwitchState(State.MovingToSpawnpoint);
     }
 
@@ -240,8 +316,13 @@ public class FarmNPC : MonoBehaviour
 
     public void EndDanceAnimation()
     {
-        SwitchState(State.Idle);
+        if (decreasingDanceLayerWeightCoroutine == null)
+        {
+            decreasingDanceLayerWeightCoroutine = StartCoroutine(DecreaseLayerWeightInAnimator(2, animationDamping));
+        }
     }
+
+
 
     void SellPlants()
     {
@@ -254,7 +335,6 @@ public class FarmNPC : MonoBehaviour
             for (int i = 0; i < cornObjects.Count; i++)
             {
                 Destroy(cornObjects[i]);
-                Debug.Log($"Destroying Object number {i}");
             }
             cornObjects.Clear();
 
