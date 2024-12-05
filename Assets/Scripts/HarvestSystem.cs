@@ -93,8 +93,6 @@ public class HarvestSystem : MonoBehaviour
     // Gets called by the player harvest animation (in the middle of the swing)
     public void HarvestPlants()
     {
-        Debug.Log("Harvest");
-
         List<Plant> plants = new List<Plant>(detectedPlants);
 
         for (int i = 0; i < plants.Count; i++)

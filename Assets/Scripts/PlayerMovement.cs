@@ -1,9 +1,11 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
+    [Header("Type")]
+    public bool isTouch = false;
+    private bool touchCountReached = false;
 
     // VARIABLES
     [Header("Speed")]
@@ -12,12 +14,6 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Rotation")]
     public float rotationSpeed = 8f;
-    public LayerMask rotateMouseLayer; // Layer that gets hit by the mouse ray to rotate to that point
-
-    private float moveX;
-    private float moveZ;
-    private Vector3 moveDirection;
-    private Vector3 velocity;
 
     [Header("Ground Check")]
     [SerializeField] private bool isGrounded;
@@ -27,12 +23,18 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Animation Handling")]
     public float animationDamping = 1f;
-    Coroutine animationDampingCoroutine;
-
+    public float joystickDeadzone = 0.1f; // Deadzone für den Joystick
+    private float targetValue;
 
     // REFERENCES
     private CharacterController controller;
     private Animator animator;
+    public Joystick joystick;
+
+    private Vector3 moveDirection;
+    private Vector3 velocity;
+
+    private Coroutine animationDampingCoroutine;
 
     private void Start()
     {
@@ -42,109 +44,94 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
-        if (canMove)
+        if(!touchCountReached)
         {
-            SetMovementInput(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-            Move();
+            if(Input.touchCount > 0)
+            {
+                Debug.Log("Touch detected!");
+                touchCountReached = true;
+                isTouch = true;
+                joystick.gameObject.SetActive(true);
+            }
         }
+        if (!canMove) return;
 
-        if (moveDirection == Vector3.zero)
+        // Eingaben erfassen (Joystick oder Tastatur)
+        float moveX, moveZ;
+
+        if (isTouch)
         {
-            if (animationDampingCoroutine != null)
-            {
-                StopCoroutine(animationDampingCoroutine);
-                animationDampingCoroutine = null;
-            }
+            moveX = joystick.Horizontal;
+            moveZ = joystick.Vertical;
 
-            if (animationDampingCoroutine == null)
-            {
-                // Start the coroutine to decrease speed
-                animationDampingCoroutine = StartCoroutine(DecreaseSpeedValueInAnimator());
-            }
+            // Deadzone anwenden
+            if (Mathf.Abs(moveX) < joystickDeadzone) moveX = 0f;
+            if (Mathf.Abs(moveZ) < joystickDeadzone) moveZ = 0f;
         }
         else
         {
-            if (animationDampingCoroutine != null)
-            {
-                StopCoroutine(animationDampingCoroutine);
-                animationDampingCoroutine = null;
-            }
-
-            if (animationDampingCoroutine == null)
-            {
-                // Start the coroutine to increase speed
-                animationDampingCoroutine = StartCoroutine(IncreaseSpeedValueInAnimator());
-            }
+            moveX = Input.GetAxisRaw("Horizontal");
+            moveZ = Input.GetAxisRaw("Vertical");
         }
-    }
 
-    private IEnumerator IncreaseSpeedValueInAnimator()
-    {
-        float currentValue = animator.GetFloat("Speed");
-        float targetValue = moveDirection.magnitude;
+        moveDirection = new Vector3(moveX, 0, moveZ);
 
-        while (currentValue < targetValue)
+        // Bewegung normalisieren, falls nötig
+        if (moveDirection.magnitude > 1f)
         {
-            if (Mathf.Approximately(currentValue, targetValue))
-            {
-                animator.SetFloat("Speed", targetValue);
-                break;
-            }
-
-            // Increase the current value based on the increase speed and deltaTime
-            currentValue += animationDamping * Time.deltaTime;
-
-            // Clamp the current value to ensure it doesn't exceed the target
-            currentValue = Mathf.Min(currentValue, targetValue);
-
-            // Set the Animator parameter to the new value
-            animator.SetFloat("Speed", currentValue);
-
-            // Wait for the next frame before continuing the loop
-            yield return null;
+            moveDirection.Normalize();
         }
+
+        // Zielwert für Animation setzen
+        targetValue = moveDirection.magnitude * moveSpeed;
+
+        // Animation aktualisieren
+        if (animationDampingCoroutine == null)
+        {
+            animationDampingCoroutine = StartCoroutine(UpdateSpeedValueInAnimator());
+        }
+
+        // Bewegung ausführen
+        Move();
     }
 
-    private IEnumerator DecreaseSpeedValueInAnimator()
+    private IEnumerator UpdateSpeedValueInAnimator()
     {
-
         float currentValue = animator.GetFloat("Speed");
-        float targetValue = 0f; // Ziel ist 0
 
         while (!Mathf.Approximately(currentValue, targetValue))
         {
-            // Smoothly decrease towards the target value
-            currentValue -= animationDamping * Time.deltaTime;
-            currentValue = Mathf.Max(currentValue, targetValue); // Clamp to target
+            // Geschwindigkeit schrittweise anpassen
+            if (currentValue < targetValue)
+            {
+                currentValue += animationDamping * Time.deltaTime;
+                currentValue = Mathf.Min(currentValue, targetValue);
+            }
+            else
+            {
+                currentValue -= animationDamping * Time.deltaTime;
+                currentValue = Mathf.Max(currentValue, targetValue);
+            }
 
             animator.SetFloat("Speed", currentValue);
 
-            yield return null; // Wait for the next frame
+            yield return null; // Auf den nächsten Frame warten
         }
 
-        // Ensure the final value is set
-        animator.SetFloat("Speed", targetValue);
-
-        // Mark coroutine as finished
-        animationDampingCoroutine = null;
+        animationDampingCoroutine = null; // Coroutine zurücksetzen
     }
-
 
     public void Move()
     {
         CheckIfGrounded();
+        ApplyGravity();
 
-        CalculateGravity();
-
-        CalculateMovementDirection();
-
-        RotateIfMoving();
-
-        //RotateToMousePosition();
+        if (moveDirection != Vector3.zero)
+        {
+            RotateToMoveDirection();
+        }
 
         ApplyMovement();
-
-        ApplyGravity();
     }
 
     void CheckIfGrounded()
@@ -152,80 +139,24 @@ public class PlayerMovement : MonoBehaviour
         isGrounded = Physics.CheckSphere(transform.position, groundCheckDistance, groundMask);
     }
 
-    void CalculateGravity()
+    void ApplyGravity()
     {
         if (isGrounded && velocity.y < 0)
         {
             velocity.y = -2f;
         }
-    }
 
-    public void SetMovementInput(float x, float z)
-    {
-        moveX = x;
-        moveZ = z;
-    }
-
-    void CalculateMovementDirection()
-    {
-        moveDirection = new Vector3(moveX, 0, moveZ);
-
-        if (moveDirection.magnitude > 1f)
-        {
-            moveDirection.Normalize();
-        }
-    }
-    void RotateIfMoving()
-    {
-        if (moveDirection != Vector3.zero)
-        {
-            RotateToMoveDirection();
-        }
-    }
-
-    public void ApplyMovement()
-    {
-        moveDirection *= moveSpeed;
-        controller.Move(moveDirection * Time.deltaTime);
-    }
-
-    void ApplyGravity()
-    {
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
     }
 
-    public void RotateToMoveDirection()
+    void ApplyMovement()
+    {
+        controller.Move(moveDirection * moveSpeed * Time.deltaTime);
+    }
+
+    void RotateToMoveDirection()
     {
         transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(moveDirection), Time.deltaTime * rotationSpeed);
     }
-
-    /*
-
-    public void RotateToMousePosition()
-    {
-        // Get the mouse position in the world
-        Vector3 mouseWorldPosition = GetMouseWorldPosition();
-
-        // Calculate direction from player to mouse position
-        Vector3 directionToMouse = (mouseWorldPosition - transform.position).normalized;
-
-        directionToMouse.y = 0f;
-
-        transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(directionToMouse), Time.deltaTime * rotationSpeed);
-    }
-
-    public Vector3 GetMouseWorldPosition()
-    {
-        // Convert mouse position to world position
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, rotateMouseLayer))
-        {
-            return hit.point;
-        }
-        return ray.GetPoint(100f); // Default far away point if nothing is hit
-    }
-
-    */
 }
-
