@@ -44,6 +44,7 @@ public class FarmNPC : MonoBehaviour
     Coroutine decreasingDanceLayerWeightCoroutine;
     Coroutine decreasingHarvestLayerWeightCoroutine;
     Coroutine increasingHarvestLayerWeightCoroutine;
+    [SerializeField] float harvestAnimationDamping;
 
     void Start()
     {
@@ -123,7 +124,6 @@ public class FarmNPC : MonoBehaviour
         animator.SetFloat("Speed", velocity * agent.speed);
     }
 
-    [SerializeField] float harvestAnimationDamping;
     void SwitchState(State newState)
     {
 
@@ -322,7 +322,10 @@ public class FarmNPC : MonoBehaviour
         }
     }
 
-
+    public void UpgradeCapacity()
+    {
+        maxCarrieableCorn++;
+    }
 
     void SellPlants()
     {
